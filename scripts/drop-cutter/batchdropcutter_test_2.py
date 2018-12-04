@@ -3,16 +3,15 @@ import pyocl
 import camvtk
 import time
 import vtk
-import datetime       
+import datetime
+import math
 
-
-        
-if __name__ == "__main__": 
-    print ocl.version()    
+if __name__ == "__main__":  
+    print ocl.version()
     myscreen = camvtk.VTKScreen()
-    
-    #stl = camvtk.STLSurf("../stl/gnu_tux_mod.stl")
-    stl = camvtk.STLSurf("../stl/demo.stl")
+    stl = camvtk.STLSurf("../../stl/gnu_tux_mod.stl")
+    #stl = camvtk.STLSurf("../stl/beet_mm.stl")
+    #stl = camvtk.STLSurf("../stl/Blade.stl")
     myscreen.addActor(stl)
     stl.SetWireframe()
     stl.SetColor((0.5,0.5,0.5))
@@ -20,21 +19,21 @@ if __name__ == "__main__":
     polydata = stl.src.GetOutput()
     s = ocl.STLSurf()
     camvtk.vtkPolyData2OCLSTL(polydata, s)
-    print "STL surface read,", s.size(), "triangles"
+    print "STL surface read ", s.size(), " triangles"
     length=5
     cutter = ocl.BallCutter(1.4321, length)
     #cutter = ocl.CylCutter(1.123, length)
-    #cutter = ocl.BullCutter(1.123, 0.2, length)
+    #cutter = ocl.BullCutter(1.4123, 0.5, length)
+    #cutter = ocl.ConeCutter(0.43, math.pi/7, length)
     print cutter
     
     minx=0
-    dx=0.1/6
-    maxx=10
+    dx=0.06
+    maxx=9
     miny=0
     dy=1
-    maxy=10
-    z=-17
-    # this generates a list of CL-points in a grid
+    maxy=12
+    z=-5
     clpoints = pyocl.CLPointGrid(minx,dx,maxx,miny,dy,maxy,z)
     print "generated grid with", len(clpoints)," CL-points"
     
@@ -42,38 +41,23 @@ if __name__ == "__main__":
     bdc1 = ocl.BatchDropCutter()
     bdc1.setSTL(s)
     bdc1.setCutter(cutter)
+    
     for p in clpoints:
         bdc1.appendPoint(p)
-    
+        
     t_before = time.time()    
-    print "threads=",bdc1.getThreads()
     bdc1.run()
     t_after = time.time()
     calctime = t_after-t_before
-    print " done in ", calctime," s"
+    print " done in ", calctime," s"    
     
-    clpoints = bdc1.getCLPoints()
-
-    print len(clpoints), " cl points evaluated"
-    
+    clpts = bdc1.getCLPoints()
     print "rendering...",
-    
-    # draw the CL-points
-    camvtk.drawCLPointCloud(myscreen, clpoints)
-        
+    camvtk.drawCLPointCloud(myscreen, clpts)
     print "done"
-        
+       
     myscreen.camera.SetPosition(3, 23, 15)
     myscreen.camera.SetFocalPoint(4, 5, 0)
-    
-    
-    w2if = vtk.vtkWindowToImageFilter()
-    w2if.SetInput(myscreen.renWin)
-    lwr = vtk.vtkPNGWriter()
-    lwr.SetInput( w2if.GetOutput() )
-    w2if.Modified()
-    lwr.SetFileName("tux1.png")
-    #lwr.Write()
     
     t = camvtk.Text()
     t.SetText("OpenCAMLib")
@@ -81,7 +65,7 @@ if __name__ == "__main__":
     myscreen.addActor( t)
     
     t2 = camvtk.Text()
-    stltext = "%i triangles\n%i CL-points\n%0.1f seconds" % (s.size(), len(clpoints), calctime)
+    stltext = "%i triangles\n%i CL-points\n%0.1f seconds" % (s.size(), len(clpts), calctime)
     t2.SetText(stltext)
     t2.SetPos( (50, myscreen.height-200) )
     myscreen.addActor( t2)
@@ -92,8 +76,7 @@ if __name__ == "__main__":
     t3.SetText(ctext)
     t3.SetPos( (50, myscreen.height-250) )
     myscreen.addActor( t3)
-
+    
     myscreen.render()
     myscreen.iren.Start()
     raw_input("Press Enter to terminate") 
-    

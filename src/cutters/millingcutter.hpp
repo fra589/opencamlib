@@ -1,21 +1,22 @@
 /*  $Id$
  * 
- *  Copyright 2010 Anders Wallin (anders.e.e.wallin "at" gmail.com)
+ *  Copyright (c) 2010 Anders Wallin (anders.e.e.wallin "at" gmail.com).
  *  
- *  This file is part of OpenCAMlib.
- *
- *  OpenCAMlib is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
+ *  This file is part of OpenCAMlib 
+ *  (see https://github.com/aewallin/opencamlib).
+ *  
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 2.1 of the License, or
  *  (at your option) any later version.
- *
- *  OpenCAMlib is distributed in the hope that it will be useful,
+ *  
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with OpenCAMlib.  If not, see <http://www.gnu.org/licenses/>.
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef MILLING_CUTTER_H
@@ -162,7 +163,7 @@ class MillingCutter {
         
     // DROP-CUTTER
         /// drop cutter against edge p1-p2 at xy-distance d from cl
-        /// translates to cl=(0,0) and rotates edge to be alog x-axis 
+        /// translates to cl=(0,0) and rotates edge to be along x-axis 
         /// for call to singleEdgeDropCanonical()
         bool singleEdgeDrop(CLPoint& cl, const Point& p1, const Point& p2, double d) const;
         /// edge-drop in the 'canonical' position with cl=(0,0,cl.z) and edge u1-u2 along x-axis.

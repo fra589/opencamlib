@@ -1,21 +1,22 @@
 /*  $Id$
  * 
- *  Copyright 2010 Anders Wallin (anders.e.e.wallin "at" gmail.com)
+ *  Copyright (c) 2010 Anders Wallin (anders.e.e.wallin "at" gmail.com).
  *  
- *  This file is part of OpenCAMlib.
- *
- *  OpenCAMlib is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
+ *  This file is part of OpenCAMlib 
+ *  (see https://github.com/aewallin/opencamlib).
+ *  
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 2.1 of the License, or
  *  (at your option) any later version.
- *
- *  OpenCAMlib is distributed in the hope that it will be useful,
+ *  
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with OpenCAMlib.  If not, see <http://www.gnu.org/licenses/>.
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef POINT_H
 #define POINT_H
@@ -99,9 +100,9 @@ class Point {
         /// returns true if point is right of line through p1 and p2 (works in the XY-plane)
         bool isRight(const Point &p1, const Point &p2) const;
          
-        /// retruns true if Point *this is inside Triangle t 
+        /// returns true if Point *this is inside Triangle t 
         bool isInside(const Triangle &t) const; 
-        /// retrun true if Point within line segment p1-p2
+        /// return true if Point within line segment p1-p2
         bool isInside(const Point& p1, const Point& p2) const;
             
 

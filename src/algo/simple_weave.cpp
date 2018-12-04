@@ -1,20 +1,22 @@
-/*  
- *  Copyright 2010-2011 Anders Wallin (anders.e.e.wallin "at" gmail.com)
+/*  $Id$
+ * 
+ *  Copyright (c) 2010-2011 Anders Wallin (anders.e.e.wallin "at" gmail.com).
  *  
- *  This file is part of OpenCAMlib.
- *
- *  OpenCAMlib is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
+ *  This file is part of OpenCAMlib 
+ *  (see https://github.com/aewallin/opencamlib).
+ *  
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 2.1 of the License, or
  *  (at your option) any later version.
- *
- *  OpenCAMlib is distributed in the hope that it will be useful,
+ *  
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with OpenCAMlib.  If not, see <http://www.gnu.org/licenses/>.
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
@@ -177,9 +179,9 @@ void SimpleWeave::add_int_vertex(  const Point& v_position, // position of new v
     Edge ye_lu_next, ye_lu_prev ;
     Edge ye_ul_next, ye_ul_prev ;
     Edge ye_lu, ye_ul;
-                 
-    bool y_lu_edge = g.has_edge(y_l,y_u); // flag indicating existing y_l - y_u edge 
-    // the case where y_l and y_u are alread already connected.
+
+    bool y_lu_edge = g.has_edge(y_l,y_u); // flag indicating existing y_l - y_u edge
+    // the case where y_l and y_u are already connected.
 
     if ( y_lu_edge ) {
         assert( g.has_edge( y_u, y_l ) ); // twin must also exist

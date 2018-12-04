@@ -1,20 +1,22 @@
-/*  
- *  Copyright 2010-2011 Anders Wallin (anders.e.e.wallin "at" gmail.com)
+/*  $Id$
+ * 
+ *  Copyright (c) 2010-2011 Anders Wallin (anders.e.e.wallin "at" gmail.com).
  *  
- *  This file is part of OpenCAMlib.
- *
- *  OpenCAMlib is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
+ *  This file is part of OpenCAMlib 
+ *  (see https://github.com/aewallin/opencamlib).
+ *  
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 2.1 of the License, or
  *  (at your option) any later version.
- *
- *  OpenCAMlib is distributed in the hope that it will be useful,
+ *  
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with OpenCAMlib.  If not, see <http://www.gnu.org/licenses/>.
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <algorithm>
@@ -157,7 +159,7 @@ void AdaptiveWaterline::xfiber_adaptive_sample(const Span* span, double start_t,
         xfiber_adaptive_sample( span, start_t, mid_t , start_f, mid_f  );
         xfiber_adaptive_sample( span, mid_t  , stop_t, mid_f  , stop_f );
     } else if ( !flat(start_f,mid_f,stop_f)   ) {
-        if (fw_step > min_sampling) { // not a a flat segment, and we have not reached maximum sampling
+        if (fw_step > min_sampling) { // not a flat segment, and we have not reached maximum sampling
             xfiber_adaptive_sample( span, start_t, mid_t , start_f, mid_f  );
             xfiber_adaptive_sample( span, mid_t  , stop_t, mid_f  , stop_f );
         }
@@ -179,7 +181,7 @@ void AdaptiveWaterline::yfiber_adaptive_sample(const Span* span, double start_t,
         yfiber_adaptive_sample( span, start_t, mid_t , start_f, mid_f  );
         yfiber_adaptive_sample( span, mid_t  , stop_t, mid_f  , stop_f );
     } else if ( !flat(start_f,mid_f,stop_f)   ) {
-        if (fw_step > min_sampling) { // not a a flat segment, and we have not reached maximum sampling
+        if (fw_step > min_sampling) { // not a flat segment, and we have not reached maximum sampling
             yfiber_adaptive_sample( span, start_t, mid_t , start_f, mid_f  );
             yfiber_adaptive_sample( span, mid_t  , stop_t, mid_f  , stop_f );
         }
