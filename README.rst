@@ -20,6 +20,11 @@ OpenCAMLib (ocl) is a c++ library with python bindings for creating 3D toolpaths
 such as mills and lathes. From August 2018 OpenCAMLib is released under LGPL license.
 
 - repository https://github.com/aewallin/opencamlib
+- PPAs
+ - https://launchpad.net/~iacobs/+archive/ubuntu/cnc/ 
+ - https://launchpad.net/~neomilium/+archive/ubuntu/cam
+ - https://launchpad.net/~freecad-community/+archive/ubuntu/ppa 
+ - (updated 2012) https://launchpad.net/~anders-e-e-wallin/+archive/ubuntu/cam
 - mailing-list http://groups.google.com/group/opencamlib
 - IRC-channel #cam on irc.freenode.net
 - coding standard (?) http://www.possibility.com/Cpp/CppCodingStandard.html
@@ -34,6 +39,10 @@ to clone, build and install install the ocl.so library and camvtk.py run the fol
  $ cd opencamlib
  $ mkdir build
  $ cd build
+ $ sudo apt install cmake
+ $ sudo apt install libboost-program-options-dev
+ $ sudo apt install doxygen
+ $ sudo apt install texlive-full
  $ cmake ../src
  $ make        (try make -j4 for a faster build if you have a multi-core machine)
  $ sudo make install
@@ -104,3 +113,16 @@ Ubuntu 10.04LTS-> install and build
  - this should build and install ocl correctly.
 
 
+DOCKER BUILD
+-----------------------
+
+To run this in Docker, simply run::  
+
+ $ docker build . -t opencamlib
+ $ docker run -it -p 5900:5900 -e VNC_SERVER_PASSWORD=TestVNC --user cam --privileged opencamlib
+
+Then simply open up a VNC socket connection. With Mac, you can just open Finder, then run CMD + K. 
+
+Type in "vnc://localhost:5900" as the server address, and type "TestVNC" as the password. 
+
+Right click on the desktop terminal that shows up and you can open up a terminal inside there. This is a easy and quick way to get started with opencamlib, while still maintaining all the functionality

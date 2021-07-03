@@ -42,6 +42,7 @@ PathDropCutter::PathDropCutter() {
 
 PathDropCutter::~PathDropCutter() {
     delete subOp[0];
+    subOp.clear();
 }
 
 void PathDropCutter::setPath(const Path *p) {

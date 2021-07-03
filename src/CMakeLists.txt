@@ -1,24 +1,44 @@
 project(OpenCamLib)
 
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.9)
 #set( CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR} )
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
+  cmake_policy(SET CMP0025 NEW)
 endif(COMMAND cmake_policy)
+
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+if (CMAKE_VERSION VERSION_LESS "3.1")
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+  endif ()
+else ()
+  set (CMAKE_CXX_STANDARD 11)
+endif ()
 
 # some options to set what is built:
 option(BUILD_CXX_LIB
   "Build/install the pure c++ libocl library? " ON)
 
 option(BUILD_PY_LIB 
-  "Build/install the python ocl library? " ON)
+  "Build/install the python ocl library? " OFF)
+
+option(BUILD_NODEJS_LIB 
+  "Build/install the node.js ocl library? " OFF)
 
 option(BUILD_DOC
   "Build/install the ocl documentation? " ON)
 
 option(USE_OPENMP
     "Use OpenMP for parallel computation" ON)
+
+option(VERSION_STRING
+    "Set version string" OFF)
+
+option(USE_PY_3
+    "Use Python V3" OFF)
 
 if (NOT BUILD_CXX_LIB)
   message(STATUS " Note: will NOT build pure c++ library")
@@ -28,71 +48,16 @@ if (NOT BUILD_PY_LIB)
   message(STATUS " Note: will NOT build python library")
 endif(NOT BUILD_PY_LIB)
 
+if (NOT BUILD_EMSCRIPTEN_LIB)
+  message(STATUS " Note: will NOT build emscripten library")
+endif(NOT BUILD_EMSCRIPTEN_LIB)
+
 if (NOT BUILD_DOC)
   message(STATUS " Note: will NOT build ocl documentation")
 endif(NOT BUILD_DOC)
 
 # figure out the gcc version
 include(gcc_version.cmake)
-
-#
-# Figure out how to build and where to install the Python modules
-#
-
-find_program(PYTHON_EXECUTABLE NAMES python2)
-
-if (APPLE)
-  # Ask Python to tell us it's include directory, if nobody else has
-  if(NOT DEFINED PYTHON_INCLUDE_DIRS)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-      "from distutils.sysconfig import get_python_inc;print get_python_inc()"
-      OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS
-      RESULT_VARIABLE PYTHON_INCLUDE_DIR_RESULT ERROR_QUIET)
-    if(NOT PYTHON_INCLUDE_DIR_RESULT MATCHES 0)
-      message(SEND_ERROR "Failed to determine PYTHON_INCLUDE_DIR")
-    endif(NOT PYTHON_INCLUDE_DIR_RESULT MATCHES 0)
-  endif(NOT DEFINED PYTHON_INCLUDE_DIRS)
-
-  # Similar for the Python library
-  if(NOT DEFINED PYTHON_LIBRARY)
-      # Get the library path
-      execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-        "from distutils import sysconfig;print sysconfig.get_config_var('LIBDIR')"
-        OUTPUT_VARIABLE PYTHON_LIBRARY_DIR
-        RESULT_VARIABLE PYTHON_LIBRARY_DIR_RESULT ERROR_QUIET)
-      string(STRIP ${PYTHON_LIBRARY_DIR} PYTHON_LIBRARY_DIR)
-      if(NOT PYTHON_LIBRARY_DIR_RESULT MATCHES 0)
-          message(SEND_ERROR "Failed to determine PYTHON_LIBRARY")
-      endif(NOT PYTHON_LIBRARY_DIR_RESULT MATCHES 0)
-
-      # Get library filename - might not be safe to assume .dylib extension?
-      execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-        "import sys;print 'libpython%d.%d.dylib'%sys.version_info[0:2]"
-        OUTPUT_VARIABLE PYTHON_LIBRARY_FILE
-        RESULT_VARIABLE PYTHON_LIBRARY_FILE_RESULT ERROR_QUIET)
-      string(STRIP ${PYTHON_LIBRARY_FILE} PYTHON_LIBRARY_FILE)
-      if(NOT PYTHON_LIBRARY_FILE_RESULT MATCHES 0)
-          message(SEND_ERROR "Failed to determine PYTHON_LIBRARY")
-      endif(NOT PYTHON_LIBRARY_FILE_RESULT MATCHES 0)
-
-      set(PYTHON_LIBRARY "${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY_FILE}")
-  endif(NOT DEFINED PYTHON_LIBRARY)
-endif (APPLE)
-
-execute_process(
-  COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(0,0,\"/usr/local\")"
-  OUTPUT_VARIABLE Python_site_packages
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  ) # on Ubuntu 11.10 this outputs: /usr/local/lib/python2.7/dist-packages
-
-execute_process(
-  COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(plat_specific=1,standard_lib=0,prefix=\"/usr/local\")"
-  OUTPUT_VARIABLE Python_arch_packages
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-
-find_package (PythonLibs 2 REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS} )
 
 #
 # Turn compiler warnings up to 11, at least with gcc.  I don't know how to
@@ -111,38 +76,27 @@ if (UNIX)
   endif(GCC_4_6)
 endif (UNIX)
 
-option(BUILD_TYPE
-  "Build type: Release=ON/Debug=OFF  " ON)
+# option(BUILD_TYPE
+#   "Build type: Release=ON/Debug=OFF  " ON)
 
-if (BUILD_TYPE)
-  message(STATUS " CMAKE_BUILD_TYPE = Release")
-  set(CMAKE_BUILD_TYPE Release)
-endif(BUILD_TYPE)
+# if (BUILD_TYPE)
+#   message(STATUS " CMAKE_BUILD_TYPE = Release")
+#   set(CMAKE_BUILD_TYPE Release)
+# endif(BUILD_TYPE)
 
-if (NOT BUILD_TYPE)
-  message(STATUS " CMAKE_BUILD_TYPE = Debug")
-  set(CMAKE_BUILD_TYPE Debug)
-endif(NOT BUILD_TYPE)
+# if (NOT BUILD_TYPE)
+#   message(STATUS " CMAKE_BUILD_TYPE = Debug")
+#   set(CMAKE_BUILD_TYPE Debug)
+# endif(NOT BUILD_TYPE)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-# find BOOST and boost-python
-find_package( Boost COMPONENTS python REQUIRED)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
-  message(STATUS "found Boost: " ${Boost_LIB_VERSION})
-  message(STATUS "boost-incude dirs are: " ${Boost_INCLUDE_DIRS})
-  message(STATUS "boost-python lib is: " ${Boost_PYTHON_LIBRARY})
-  message(STATUS "boost_LIBRARY_DIRS is: " ${Boost_LIBRARY_DIRS})
-  message(STATUS "Boost_LIBRARIES is: " ${Boost_LIBRARIES})    
-endif()
 
 if(USE_OPENMP)
   if(APPLE)
     # OpenMP does not work with the default Apple llvm/clang++
     # Install a more recent version using Homebrew:
     # "brew install llvm"
-    set(OpenMP_CXX_FLAGS "-fopenmp=libomp")
+    # set(OpenMP_CXX_FLAGS "-fopenmp=libomp")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   else()
     find_package( OpenMP REQUIRED )
@@ -167,13 +121,24 @@ ELSE(EXISTS ${OpenCamLib_SOURCE_DIR}/version_string.hpp)
   ################ create version_string.hpp, http://stackoverflow.com/questions/3780667
   # include the output directory, where the version_string.hpp file is generated
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
-  include(version_string.cmake)
-  # now parse the git commit id:
-  STRING(REGEX REPLACE "([0-9][0-9]).*" "\\1" GIT_MAJOR_VERSION "${GIT_COMMIT_ID}" )
-  STRING(REGEX REPLACE "[0-9][0-9].([0-9][0-9])-.*" "\\1" GIT_MINOR_VERSION "${GIT_COMMIT_ID}" )
-  STRING(REGEX REPLACE "[0-9][0-9].[0-9][0-9]-(.*)-.*" "\\1" GIT_PATCH_VERSION "${GIT_COMMIT_ID}" )
-  SET(MY_VERSION "${GIT_MAJOR_VERSION}.${GIT_MINOR_VERSION}.${GIT_PATCH_VERSION}" CACHE STRING "name")
-  SET(version_string ${CMAKE_CURRENT_BINARY_DIR}/version_string.hpp)
+  if (VERSION_STRING)
+    set( vstring "//version_string.hpp - written by cmake. changes will be lost!\n"
+               "#ifndef VERSION_STRING\n"
+               "#define VERSION_STRING \"${VERSION_STRING}\"\n"
+               "#endif\n"
+    )
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/version_string.hpp ${vstring} )
+    set(MY_VERSION ${VERSION_STRING})
+    set(version_string ${VERSION_STRING})
+  else()
+    include(version_string.cmake)
+    # now parse the git commit id:
+    STRING(REGEX REPLACE "([0-9]+).*" "\\1" GIT_MAJOR_VERSION "${GIT_COMMIT_ID}" )
+    STRING(REGEX REPLACE "[0-9]+.([0-9]+)-.*" "\\1" GIT_MINOR_VERSION "${GIT_COMMIT_ID}" )
+    STRING(REGEX REPLACE "[0-9]+.[0-9]+-(.*)-.*" "\\1" GIT_PATCH_VERSION "${GIT_COMMIT_ID}" )
+    SET(MY_VERSION "${GIT_MAJOR_VERSION}.${GIT_MINOR_VERSION}.${GIT_PATCH_VERSION}" CACHE STRING "name")
+    SET(version_string ${CMAKE_CURRENT_BINARY_DIR}/version_string.hpp)
+  endif()
 ENDIF(EXISTS ${OpenCamLib_SOURCE_DIR}/version_string.hpp)
 
 message(STATUS "OpenCamLib version: ${MY_VERSION}")
@@ -275,100 +240,31 @@ set( OCL_INCLUDE_FILES
   ${OpenCamLib_SOURCE_DIR}/algo/smart_weave.hpp
   ${OpenCamLib_SOURCE_DIR}/algo/weave_typedef.hpp
   ${OpenCamLib_SOURCE_DIR}/algo/tsp.hpp
-  
-  ${version_string}
-
   )
 
-
 # this branches into the dirs and compiles stuff there
-ADD_SUBDIRECTORY( ${OpenCamLib_SOURCE_DIR}/cutters  )
-ADD_SUBDIRECTORY( ${OpenCamLib_SOURCE_DIR}/geo  )
-ADD_SUBDIRECTORY( ${OpenCamLib_SOURCE_DIR}/algo  ) 
-ADD_SUBDIRECTORY( ${OpenCamLib_SOURCE_DIR}/dropcutter  ) 
-ADD_SUBDIRECTORY( ${OpenCamLib_SOURCE_DIR}/common  ) 
-
-# include dirs
-include_directories( ${OpenCamLib_SOURCE_DIR}/cutters )
-include_directories( ${OpenCamLib_SOURCE_DIR}/geo )
-include_directories( ${OpenCamLib_SOURCE_DIR}/algo )
-include_directories( ${OpenCamLib_SOURCE_DIR}/dropcutter )
-include_directories( ${OpenCamLib_SOURCE_DIR}/common )
-include_directories( ${OpenCamLib_SOURCE_DIR} )
-
-# strip away /usr/local/  because that is what CMAKE_INSTALL_PREFIX is set to
-# also, since there is no leading "/", it makes ${Python_site_packages} a relative path.
-STRING(REGEX REPLACE "/usr/local/(.*)$" "\\1" Python_site_packages "${Python_site_packages}" )
-STRING(REGEX REPLACE "/usr/local/(.*)$" "\\1" Python_arch_packages "${Python_arch_packages}" )
-
-message(STATUS "CMAKE_INSTALL_PREFIX is : " ${CMAKE_INSTALL_PREFIX})
-message(STATUS "Python modules will be installed to: " ${Python_site_packages})
-message(STATUS "Python libraries will be installed to: " ${Python_arch_packages})
+add_subdirectory( ${OpenCamLib_SOURCE_DIR}/cutters  )
+add_subdirectory( ${OpenCamLib_SOURCE_DIR}/geo  )
+add_subdirectory( ${OpenCamLib_SOURCE_DIR}/algo  ) 
+add_subdirectory( ${OpenCamLib_SOURCE_DIR}/dropcutter  ) 
+add_subdirectory( ${OpenCamLib_SOURCE_DIR}/common  ) 
+  
+if (BUILD_NODEJS_LIB)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/nodejslib/nodejslib.cmake)
+endif (BUILD_NODEJS_LIB)
 
 if (BUILD_PY_LIB)
-  # this makes the ocl Python module
-  add_library(
-    ocl 
-    MODULE
-    ocl_cutters.cpp
-    ocl_geometry.cpp
-    ocl_algo.cpp
-    ocl_dropcutter.cpp
-    ocl.cpp
-    
-    )
-
-  message(STATUS "linking python binary ocl.so with boost: " ${Boost_PYTHON_LIBRARY})
-  target_link_libraries(ocl ocl_common ocl_dropcutter ocl_cutters  ocl_geo ocl_algo ${Boost_LIBRARIES}  ${PYTHON_LIBRARIES} -lboost_python -lboost_system)
-  # 
-  # this makes the lib name ocl.so and not libocl.so
-  set_target_properties(ocl PROPERTIES PREFIX "") 
-  if (WIN32)
-    set_target_properties(ocl PROPERTIES VERSION ${MY_VERSION}) 
-  endif (WIN32)
-
-  install(
-    TARGETS ocl
-    LIBRARY DESTINATION ${Python_arch_packages}
-    )
-  # these are the python helper lib-files such as camvtk.py 
-  install(
-    DIRECTORY lib/
-    DESTINATION ${Python_site_packages}
-    #    PATTERN .svn EXCLUDE
-    )
+  include(${CMAKE_CURRENT_SOURCE_DIR}/pythonlib/pythonlib.cmake)
 endif (BUILD_PY_LIB)
-
 
 # this is the C++ shared library
 if (BUILD_CXX_LIB)
-  add_library(
-    libocl
-    SHARED
-    ${OCL_GEO_SRC}
-    ${OCL_CUTTER_SRC}
-    ${OCL_ALGO_SRC}
-    ${OCL_DROPCUTTER_SRC}
-    ${OCL_COMMON_SRC}
-    )
-  set_target_properties(libocl PROPERTIES PREFIX "") 
-  set_target_properties(libocl PROPERTIES VERSION ${MY_VERSION}) 
-  install(
-    TARGETS libocl
-    LIBRARY 
-    DESTINATION lib/opencamlib
-    ARCHIVE DESTINATION lib/opencamlib
-    PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-    )
-
-  # this installs the c++ include headers
-  install(
-    FILES ${OCL_INCLUDE_FILES}
-    DESTINATION include/opencamlib
-    PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
-    )
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cxxlib/cxxlib.cmake)
 endif (BUILD_CXX_LIB)
 
+if (BUILD_EMSCRIPTEN_LIB)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/emscriptenlib/emscriptenlib.cmake)
+endif (BUILD_EMSCRIPTEN_LIB)
 
 #
 # this installs the examples

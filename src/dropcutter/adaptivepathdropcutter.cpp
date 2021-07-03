@@ -32,6 +32,7 @@ namespace ocl
 //********   ********************** */
 
 AdaptivePathDropCutter::AdaptivePathDropCutter() {
+    // std::cout << " AdaptivePathDropCutter() " << std::endl;
     cutter = NULL;
     surf = NULL;
     path = NULL;
@@ -44,8 +45,9 @@ AdaptivePathDropCutter::AdaptivePathDropCutter() {
 }
 
 AdaptivePathDropCutter::~AdaptivePathDropCutter() {
-    //std::cout << " ~AdaptivePathDropCutter() \n";
+    // std::cout << " ~AdaptivePathDropCutter() " << std::endl;
     delete subOp[0];
+    subOp.clear();
 }
 
 void AdaptivePathDropCutter::run() {
